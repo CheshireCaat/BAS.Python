@@ -4,15 +4,14 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>42d3c53a-b5e9-4de9-ade7-9d5f0c8a35bc</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>main.py</StartupFile>
-    <SearchPath>
-    </SearchPath>
+    <StartupFile>distr\src\main.py</StartupFile>
+    <SearchPath>distr\src\internal;distr\src\custom;distr\src\internal;distr\src</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>python_bas_embedded</Name>
     <RootNamespace>python_bas_embedded</RootNamespace>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <CommandLineArguments>0 13076</CommandLineArguments>
+    <CommandLineArguments>0 8038</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -24,21 +23,27 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="custom\test.py" />
-    <Compile Include="internal\callback.py">
+    <Compile Include="distr\src\custom\test.py" />
+    <Compile Include="distr\src\custom\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="internal\custom.py" />
-    <Compile Include="internal\pipe.py" />
-    <Compile Include="internal\proc.py" />
-    <Compile Include="internal\__init__.py">
+    <Compile Include="distr\src\internal\loader.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="main.py" />
+    <Compile Include="distr\src\internal\custom.py" />
+    <Compile Include="distr\src\internal\pipe.py" />
+    <Compile Include="distr\src\internal\proc.py" />
+    <Compile Include="distr\src\internal\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="distr\src\main.py" />
+    <Compile Include="distr\src\__init__.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="custom\" />
-    <Folder Include="internal\" />
+    <Folder Include="distr\src\custom\" />
+    <Folder Include="distr\src\" />
+    <Folder Include="distr\src\internal\" />
+    <Folder Include="distr\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />

@@ -22,6 +22,12 @@ Create file '/distr/src/custom/<function-name>.py' contents of which
 identical to the function code.
 ```
 
+##### 5. Method by which you can add files:
+```
+Create file '/distr/src/<file-name>.py' contents of which 
+identical to the file code.
+```
+
 ##### 6. The sequence of actions for installing modules:
 ```
 Run '/distr/python.exe -m pip install <package-name>'

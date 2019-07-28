@@ -1,6 +1,6 @@
-from internal.custom import PythonCustom
-from internal.pipe import PythonPipe
-from internal.proc import PythonProc
+from distr.src.internal.custom import PythonCustom
+from distr.src.internal.pipe import PythonPipe
+from distr.src.internal.proc import PythonProc
 import json
 import sys
 
@@ -12,8 +12,8 @@ class PythonEmbedded:
 
     def start(self):
         self.custom.init()
-        self.proc.init(sys.argv[2])
-        self.pipe.init(sys.argv[2], self.handle)
+        self.pipe.init(self.handle)
+        self.proc.init()
 
     def callback_api(self, obj, api, callback):
         obj['a'] = api
@@ -34,7 +34,7 @@ class PythonEmbedded:
             send = {'l': 'undefined', 'id': obj['id']}
             self.pipe.write(json.dumps(send))
 
-    def callback(self, obj, err = None):
+    def callback(self, obj, err):
         if err is not None:
             obj['e'] = err
             obj['s'] = False
@@ -50,8 +50,7 @@ class PythonEmbedded:
         except ValueError:
             obj = None
 
-        if obj is None:
-            return
+        if obj is None: return
 
         # Run new function
         if obj['t'] == 0:
@@ -59,16 +58,13 @@ class PythonEmbedded:
                 obj['e'] = 'Function ' + obj['f'] + ' not exists'
                 obj['s'] = False
                 self.custom.clear_test_data(obj)
-                self.pipe.write(json.dumps(obj));
+                self.pipe.write(json.dumps(obj))
                 return
 
             self.custom.call(
-                self.callback_print,
-                self.callback_api,
-                self.callback,
-				obj['f'],
-                obj['v'],
-                obj['id'],
+                lambda x, y: self.callback_api(obj, x, y),
+                lambda x: self.callback_print(obj, x),
+                lambda x: self.callback(obj, x),
                 api_data,
                 obj
             )
@@ -76,7 +72,7 @@ class PythonEmbedded:
         # Return api
         if obj['t'] == 1:
             if not obj['id'] in api_call:
-                obj['e'] = 'Task id not found'
+                obj['e'] = 'Task ' +  obj['id'] + ' not exist'
                 obj['s'] = False
                 self.custom.clear_test_data(obj)
                 self.pipe.write(json.dumps(obj))
