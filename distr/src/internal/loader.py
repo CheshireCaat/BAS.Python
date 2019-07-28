@@ -1,4 +1,4 @@
-import importlib
+from importlib import util
 
 class Loader:
 
@@ -11,8 +11,8 @@ class Loader:
 
     @staticmethod
     def __spec_from_file(name, path):
-        return importlib.util.spec_from_file_location(name, path)
+        return util.spec_from_file_location(name, path)
 
     @staticmethod
     def __func_from_spec(spec):
-        return importlib.util.module_from_spec(spec)
+        return util.module_from_spec(spec)

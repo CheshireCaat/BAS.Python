@@ -24,4 +24,8 @@ def invoke(m_bas_vars, m_bas_api, m_bas_log):
     BAS_LOG = m_bas_log
 
     BAS_LOG(BAS_VARS['VAR_1'])
-    print(BAS_VARS['VAR_1'])
+    BAS_LOG(BAS_VARS)
+    BAS_LOG(invoke)
+    BAS_LOG(False)
+    BAS_LOG(2.5)
+    BAS_LOG(1)

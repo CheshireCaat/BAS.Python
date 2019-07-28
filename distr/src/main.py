@@ -23,12 +23,7 @@ class PythonEmbedded:
 
     def callback_print(self, obj, log):
         try:
-            send = {}
-            if type(obj) == object:
-                send['l'] = json.dumps(log)
-            else:
-                send['l'] = str(log)
-            send['id'] = obj['id']
+            send = {'l': json.dumps(log), 'id': obj['id']}
             self.pipe.write(json.dumps(send))
         except Exception:
             send = {'l': 'undefined', 'id': obj['id']}
