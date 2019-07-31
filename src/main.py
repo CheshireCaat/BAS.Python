@@ -1,35 +1,44 @@
-from distr.src.internal.custom import PythonCustom
-from distr.src.internal.pipe import PythonPipe
-from distr.src.internal.proc import PythonProc
 import json
 import sys
 
-api_call = {}
-api_data = {}
+from src.internal.custom import PythonCustom
+from src.internal.pipe import PythonPipe
+
+API_CALLBACKS = {}
+API_OBJECTS = {}
 
 
 class PythonEmbedded:
 
+    def __init__(self):
+        self.custom = PythonCustom()
+        self.pipe = PythonPipe()
+
     def start(self):
         self.custom.init()
         self.pipe.init(self.handle)
-        self.proc.init()
 
     def callback_api(self, obj, api, callback):
         obj['a'] = api
-        api_call[obj['id']] = callback
+        API_CALLBACKS[obj['id']] = callback
         self.custom.clear_test_data(obj)
         self.pipe.write(json.dumps(obj))
 
     def callback_print(self, obj, log):
         try:
-            send = {'l': json.dumps(log), 'id': obj['id']}
+            send = {
+                'l': json.dumps(log),
+                'id': obj['id']
+            }
             self.pipe.write(json.dumps(send))
-        except Exception:
-            send = {'l': 'undefined', 'id': obj['id']}
+        except TypeError:
+            send = {
+                'l': 'undefined',
+                'id': obj['id']
+            }
             self.pipe.write(json.dumps(send))
 
-    def callback(self, obj, err):
+    def callback_func(self, obj, err):
         if err is not None:
             obj['e'] = err
             obj['s'] = False
@@ -45,7 +54,8 @@ class PythonEmbedded:
         except ValueError:
             obj = None
 
-        if obj is None: return
+        if obj is None:
+            return
 
         # Run new function
         if obj['t'] == 0:
@@ -59,45 +69,40 @@ class PythonEmbedded:
             self.custom.call(
                 lambda x, y: self.callback_api(obj, x, y),
                 lambda x: self.callback_print(obj, x),
-                lambda x: self.callback(obj, x),
-                api_data,
+                lambda x: self.callback_func(obj, x),
+                API_OBJECTS,
                 obj
             )
 
         # Return api
         if obj['t'] == 1:
-            if not obj['id'] in api_call:
-                obj['e'] = 'Task ' +  obj['id'] + ' not exist'
+            if not obj['id'] in API_CALLBACKS:
+                obj['e'] = 'Task ' + obj['id'] + ' not exist'
                 obj['s'] = False
                 self.custom.clear_test_data(obj)
                 self.pipe.write(json.dumps(obj))
                 return
-            call = api_call[obj['id']]
-            del api_call[obj['id']]
+            call = API_CALLBACKS[obj['id']]
+            del API_CALLBACKS[obj['id']]
             call(obj['v'], False)
 
         # Kill task
         if obj['t'] == 2:
-            if obj['id'] in api_call:
-                call = api_call[obj['id']]
-                del api_call[obj['id']]
+            if obj['id'] in API_CALLBACKS:
+                call = API_CALLBACKS[obj['id']]
+                del API_CALLBACKS[obj['id']]
                 call(obj['v'], True)
-            if obj['id'] in api_data:
-                data = api_data[obj['id']]
+            if obj['id'] in API_OBJECTS:
+                data = API_OBJECTS[obj['id']]
                 data['-BAS-NEED-STOP-'] = True
 
         # Stats
         if obj['t'] == 3:
             res = {
-                's1': len(api_data),
-                's2': len(api_call)
+                's2': len(API_CALLBACKS),
+                's1': len(API_OBJECTS)
             }
             self.pipe.write(json.dumps(res))
-
-    def __init__(self):
-        self.custom = PythonCustom()
-        self.pipe = PythonPipe()
-        self.proc = PythonProc()
 
 
 if __name__ == '__main__':
