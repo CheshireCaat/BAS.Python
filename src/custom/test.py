@@ -24,8 +24,8 @@ def invoke(m_bas_vars, m_bas_api, m_bas_log):
     bas_api = m_bas_api
     bas_log = m_bas_log
 
-    test_a = Loader.import_module("E:/BAS Python/distr/src/testa.py")
-    test_b = Loader.import_module("E:/BAS Python/distr/src/testb.py")
+    test_a = Loader.import_module("testa.py")
+    test_b = Loader.import_module("testb.py")
 
     test_a.testa()
     test_b.testb()
