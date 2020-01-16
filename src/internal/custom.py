@@ -1,41 +1,46 @@
-import os
+import glob
+import threading
+from importlib import util
+from os.path import splitext, basename, dirname, join
 
-from src.internal.loader import Loader
+from .constants import NEED_STOP, SILENT_STOP
 
-SILENT_STOP = '-BAS-SILENT-STOP-'
-NEED_STOP = '-BAS-NEED-STOP'
-
-functions = {}
+modules = {}
 
 
-class PythonCustom:
+class Custom:
 
     def __init__(self):
-        pass
+        def_path = join(dirname(__file__), '../custom')
+        for file in glob.glob(join(def_path, "*.py")):
+            name = splitext(basename(file))[0]
+            spec = util.spec_from_file_location(name, file)
+            module = util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            modules[name] = module
 
-    def function_exist(self, func):
-        return func in functions
+    @staticmethod
+    def find(func):
+        return func in modules
 
-    def clear_test_data(self, obj):
-        obj['v'].pop(NEED_STOP, None)
+    @staticmethod
+    def call(callback, callback_print, callback_api, api_data, obj):
+        variables, name, key = obj['v'], obj['f'],  obj['id']
 
-    def init(self):
-        for name, func in Loader.import_functions():
-            functions[name] = func
+        def wrap():
+            try:
+                modules[name].invoke(
+                    variables, callback_api, callback_print)
+                del api_data[key]
+                if not variables[NEED_STOP]:
+                    callback(None)
+            except Exception as e:
+                del api_data[key]
+                if not variables[NEED_STOP] and str(e) != SILENT_STOP:
+                    callback(str(e))
 
-    def call(self, callback_api, callback_print, callback, data, obj):
-        call_name, call_vars, call_key = obj['f'], obj['v'], obj['id']
+        variables[NEED_STOP] = False
+        api_data[key] = variables
 
-        call_vars[NEED_STOP] = False
-        data[call_key] = call_vars
-
-        try:
-            functions[call_name].invoke(
-                call_vars, callback_api, callback_print)
-            del data[call_key]
-            if not call_vars[NEED_STOP]:
-                callback(None)
-        except Exception as e:
-            del data[call_key]
-            if not call_vars[NEED_STOP] and str(e) != SILENT_STOP:
-                callback(str(e))
+        thread = threading.Thread(target=wrap)
+        thread.run()
